@@ -1,39 +1,26 @@
 package com.lifetime.a1stdemo_firebase;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnFailureListener;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.SetOptions;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
-
-    private static final String TAG = "MainActivity";
-
-    private static final String KEY_TITLE = "title";
-    private static final String KEY_DESCRIPTION = "description";
 
     private EditText editTextTitle;
     private EditText editTextDescription;
@@ -42,8 +29,6 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseFirestore db = FirebaseFirestore.getInstance();
     private CollectionReference notebookRef = db.collection("Notebook");
-    private DocumentReference noteRef = db.document("Notebook/My First Note");
-
 
     @Override
     protected void onStart() {
@@ -103,35 +88,37 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void loadNotes(View view) {
-        notebookRef.whereGreaterThanOrEqualTo("priority", 2)
+        Task task1 = notebookRef.whereLessThan("priority", 2)
                 .orderBy("priority")
-                .orderBy("title")
-                .get()
-                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                    @Override
-                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                        String data = "";
-                        for(QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots){
-                            Note note = documentSnapshot.toObject(Note.class);
-                            note.setDocumentId(documentSnapshot.getId());
+                .get();
 
-                            String documentId = note.getDocumentId();
-                            String title = note.getTitle();
-                            String description = note.getDescription();
-                            int priority = note.getPriority();
+        Task task2 = notebookRef.whereGreaterThan("priority",2)
+                .orderBy("priority").limit(3)
+                .get();
 
-                            data += "ID: "+documentId+"\nTitle: "+title+"\nDescription: "+description
-                                    +"\nPriority: "+priority
-                                    + "\n\n";
-                        }
-
-                        textViewData.setText(data);
-                    }
-                })
-        .addOnFailureListener(new OnFailureListener() {
+        Task<List<QuerySnapshot>> allTasks = Tasks.whenAllSuccess(task1,task2);
+        allTasks.addOnSuccessListener(new OnSuccessListener<List<QuerySnapshot>>() {
             @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.d(TAG,e.toString());
+            public void onSuccess(List<QuerySnapshot> querySnapshots) {
+                String data = "";
+
+                for(QuerySnapshot queryDocumentSnapshots : querySnapshots){
+                    for(QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                        Note note = documentSnapshot.toObject(Note.class);
+                        note.setDocumentId(documentSnapshot.getId());
+
+                        String documentId = note.getDocumentId();
+                        String title = note.getTitle();
+                        String description = note.getDescription();
+                        int priority = note.getPriority();
+
+                        data += "ID: "+documentId
+                                +"\nTitle: title" +"\nDescription: "+description
+                                +"\nPriority: "+ priority + "\n\n";
+                    }
+                }
+
+                textViewData.setText(data);
             }
         });
     }
