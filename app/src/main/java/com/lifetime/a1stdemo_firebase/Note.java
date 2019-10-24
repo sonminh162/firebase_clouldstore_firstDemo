@@ -13,10 +13,11 @@ public class Note {
 
     public Note(){}
 
-    public Note(String title, String description, int priority) {
+    public Note(String title, String description, int priority,List<String> tags) {
         this.title = title;
         this.description = description;
         this.priority = priority;
+        this.tags = tags;
     }
 
     @Exclude
