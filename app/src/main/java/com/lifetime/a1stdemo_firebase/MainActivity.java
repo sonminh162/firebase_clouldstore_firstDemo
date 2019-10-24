@@ -39,12 +39,6 @@ public class MainActivity extends AppCompatActivity {
         textViewData = findViewById(R.id.text_view_data);
         editTextTags = findViewById(R.id.edit_text_tags);
 
-        updateNestedValue();
-    }
-
-    private void updateNestedValue(){
-        notebookRef.document("ANVFSjG3VWOoPHKBnJPv")
-                .update("tags.tag1.nested1.nested2",true);
     }
 
     public void addNote(View view) {
@@ -67,12 +61,14 @@ public class MainActivity extends AppCompatActivity {
 
         Note note = new Note(title, description, priority,tags);
 
-        notebookRef.add(note);
+        notebookRef.document("ANVFSjG3VWOoPHKBnJPv")
+                .collection("Child Notes").add(note);
     }
 
 
     public void loadNotes(View view) {
-        notebookRef.whereEqualTo("tags.tag1",true)
+        notebookRef.document("ANVFSjG3VWOoPHKBnJPv")
+                .collection("Child Notes")
                 .get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
