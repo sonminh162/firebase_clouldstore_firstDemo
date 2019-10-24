@@ -14,8 +14,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,13 +39,12 @@ public class MainActivity extends AppCompatActivity {
         textViewData = findViewById(R.id.text_view_data);
         editTextTags = findViewById(R.id.edit_text_tags);
 
-        updateArray();
+        updateNestedValue();
     }
 
-    private void updateArray(){
-        notebookRef.document("JCTS4fbM4DNINyF8LFeM")
-                //.update("tags", FieldValue.arrayUnion("new tag"));
-                .update("tags",FieldValue.arrayRemove("new tag"));
+    private void updateNestedValue(){
+        notebookRef.document("ANVFSjG3VWOoPHKBnJPv")
+                .update("tags.tag1.nested1.nested2",true);
     }
 
     public void addNote(View view) {
@@ -60,7 +59,11 @@ public class MainActivity extends AppCompatActivity {
 
         String tagInput = editTextTags.getText().toString();
         String[] tagArray = tagInput.split("\\s*,\\s*");
-        List<String> tags = Arrays.asList(tagArray);
+        Map<String, Boolean> tags = new HashMap<>();
+
+        for(String tag : tagArray) {
+            tags.put(tag,true);
+        }
 
         Note note = new Note(title, description, priority,tags);
 
@@ -69,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void loadNotes(View view) {
-        notebookRef.whereArrayContains("tags","tag5")
+        notebookRef.whereEqualTo("tags.tag1",true)
                 .get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -84,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
 
                             data += "ID: " + documentId;
 
-                            for(String tag : note.getTags()){
+                            for(String tag : note.getTags().keySet()){
                                 data += "\n-" + tag;
                             }
 
