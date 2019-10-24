@@ -2,11 +2,14 @@ package com.lifetime.a1stdemo_firebase;
 
 import com.google.firebase.firestore.Exclude;
 
+import java.util.List;
+
 public class Note {
     private String documentId;
     private String title;
     private String description;
     private int priority;
+    List<String> tags;
 
     public Note(){}
 
@@ -41,4 +44,9 @@ public class Note {
     public void setPriority(int priority) {
         this.priority = priority;
     }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
 }
